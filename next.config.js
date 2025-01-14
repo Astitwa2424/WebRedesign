@@ -9,13 +9,22 @@ const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
 const nextConfig = {
   images: {
     remotePatterns: [
-      ...[NEXT_PUBLIC_SERVER_URL /* 'https://example.com' */].map((item) => {
-        const url = new URL(item)
-        return {
-          hostname: url.hostname,
-          protocol: url.protocol.replace(':', ''),
+      // Safely handle URL parsing for remote patterns
+      ...(() => {
+        try {
+          if (!NEXT_PUBLIC_SERVER_URL) return []
+          const url = new URL(NEXT_PUBLIC_SERVER_URL)
+          return [
+            {
+              hostname: url.hostname,
+              protocol: url.protocol.replace(':', ''),
+            },
+          ]
+        } catch (e) {
+          console.warn('Invalid URL in remotePatterns config, skipping:', e.message)
+          return []
         }
-      }),
+      })(),
     ],
   },
   reactStrictMode: true,
