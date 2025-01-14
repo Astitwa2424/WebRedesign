@@ -1,0 +1,1391 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+model pages_v {
+  id                                         Int                              @id @default(dbgenerated("nextval('_pages_v_id_seq'::regclass)"))
+  parent_id                                  Int?
+  version_title                              String?                          @db.VarChar
+  version_hero_type                          enum__pages_v_version_hero_type? @default(lowImpact)
+  version_hero_rich_text                     Json?
+  version_hero_media_id                      Int?
+  version_meta_title                         String?                          @db.VarChar
+  version_meta_image_id                      Int?
+  version_meta_description                   String?                          @db.VarChar
+  version_published_at                       DateTime?                        @db.Timestamptz(3)
+  version_slug                               String?                          @db.VarChar
+  version_slug_lock                          Boolean?                         @default(true)
+  version_updated_at                         DateTime?                        @db.Timestamptz(3)
+  version_created_at                         DateTime?                        @db.Timestamptz(3)
+  version__status                            enum__pages_v_version_status?    @default(draft)
+  created_at                                 DateTime                         @default(now()) @db.Timestamptz(3)
+  updated_at                                 DateTime                         @default(now()) @db.Timestamptz(3)
+  latest                                     Boolean?
+  autosave                                   Boolean?
+  pages                                      pages?                           @relation(fields: [parent_id], references: [id], onUpdate: NoAction, map: "_pages_v_parent_id_pages_id_fk")
+  media_pages_v_version_hero_media_idTomedia media?                           @relation("pages_v_version_hero_media_idTomedia", fields: [version_hero_media_id], references: [id], onUpdate: NoAction, map: "_pages_v_version_hero_media_id_media_id_fk")
+  media_pages_v_version_meta_image_idTomedia media?                           @relation("pages_v_version_meta_image_idTomedia", fields: [version_meta_image_id], references: [id], onUpdate: NoAction, map: "_pages_v_version_meta_image_id_media_id_fk")
+  pages_v_blocks_archive                     pages_v_blocks_archive[]
+  pages_v_blocks_content                     pages_v_blocks_content[]
+  pages_v_blocks_cta                         pages_v_blocks_cta[]
+  pages_v_blocks_form_block                  pages_v_blocks_form_block[]
+  pages_v_blocks_media_block                 pages_v_blocks_media_block[]
+  pages_v_rels                               pages_v_rels[]
+  pages_v_version_hero_links                 pages_v_version_hero_links[]
+
+  @@index([autosave])
+  @@index([created_at])
+  @@index([latest])
+  @@index([parent_id], map: "_pages_v_parent_idx")
+  @@index([updated_at])
+  @@index([version_hero_media_id], map: "_pages_v_version_hero_version_hero_media_idx")
+  @@index([version_meta_image_id], map: "_pages_v_version_meta_version_meta_image_idx")
+  @@index([version__status], map: "_pages_v_version_version__status_idx")
+  @@index([version_created_at], map: "_pages_v_version_version_created_at_idx")
+  @@index([version_slug], map: "_pages_v_version_version_slug_idx")
+  @@index([version_updated_at], map: "_pages_v_version_version_updated_at_idx")
+  @@map("_pages_v")
+}
+
+model pages_v_blocks_archive {
+  order         Int                                       @map("_order")
+  parent_id     Int                                       @map("_parent_id")
+  path          String                                    @map("_path")
+  id            Int                                       @id @default(dbgenerated("nextval('_pages_v_blocks_archive_id_seq'::regclass)"))
+  intro_content Json?
+  populate_by   enum__pages_v_blocks_archive_populate_by? @default(collection)
+  relation_to   enum__pages_v_blocks_archive_relation_to? @default(posts)
+  limit         Decimal?                                  @default(10) @db.Decimal
+  uuid          String?                                   @map("_uuid") @db.VarChar
+  block_name    String?                                   @db.VarChar
+  pages_v       pages_v                                   @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_blocks_archive_parent_id_fk")
+
+  @@index([order], map: "_pages_v_blocks_archive_order_idx")
+  @@index([parent_id], map: "_pages_v_blocks_archive_parent_id_idx")
+  @@index([path], map: "_pages_v_blocks_archive_path_idx")
+  @@map("_pages_v_blocks_archive")
+}
+
+model pages_v_blocks_content {
+  order                          Int                              @map("_order")
+  parent_id                      Int                              @map("_parent_id")
+  path                           String                           @map("_path")
+  id                             Int                              @id @default(dbgenerated("nextval('_pages_v_blocks_content_id_seq'::regclass)"))
+  uuid                           String?                          @map("_uuid") @db.VarChar
+  block_name                     String?                          @db.VarChar
+  pages_v                        pages_v                          @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_blocks_content_parent_id_fk")
+  pages_v_blocks_content_columns pages_v_blocks_content_columns[]
+
+  @@index([order], map: "_pages_v_blocks_content_order_idx")
+  @@index([parent_id], map: "_pages_v_blocks_content_parent_id_idx")
+  @@index([path], map: "_pages_v_blocks_content_path_idx")
+  @@map("_pages_v_blocks_content")
+}
+
+model pages_v_blocks_content_columns {
+  order                  Int                                                   @map("_order")
+  parent_id              Int                                                   @map("_parent_id")
+  id                     Int                                                   @id @default(dbgenerated("nextval('_pages_v_blocks_content_columns_id_seq'::regclass)"))
+  size                   enum__pages_v_blocks_content_columns_size?            @default(oneThird)
+  rich_text              Json?
+  enable_link            Boolean?
+  link_type              enum__pages_v_blocks_content_columns_link_type?       @default(reference)
+  link_new_tab           Boolean?
+  link_url               String?                                               @db.VarChar
+  link_label             String?                                               @db.VarChar
+  link_appearance        enum__pages_v_blocks_content_columns_link_appearance? @default(default)
+  uuid                   String?                                               @map("_uuid") @db.VarChar
+  pages_v_blocks_content pages_v_blocks_content                                @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_blocks_content_columns_parent_id_fk")
+
+  @@index([order], map: "_pages_v_blocks_content_columns_order_idx")
+  @@index([parent_id], map: "_pages_v_blocks_content_columns_parent_id_idx")
+  @@map("_pages_v_blocks_content_columns")
+}
+
+model pages_v_blocks_cta {
+  order                    Int                        @map("_order")
+  parent_id                Int                        @map("_parent_id")
+  path                     String                     @map("_path")
+  id                       Int                        @id @default(dbgenerated("nextval('_pages_v_blocks_cta_id_seq'::regclass)"))
+  rich_text                Json?
+  uuid                     String?                    @map("_uuid") @db.VarChar
+  block_name               String?                    @db.VarChar
+  pages_v                  pages_v                    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_blocks_cta_parent_id_fk")
+  pages_v_blocks_cta_links pages_v_blocks_cta_links[]
+
+  @@index([order], map: "_pages_v_blocks_cta_order_idx")
+  @@index([parent_id], map: "_pages_v_blocks_cta_parent_id_idx")
+  @@index([path], map: "_pages_v_blocks_cta_path_idx")
+  @@map("_pages_v_blocks_cta")
+}
+
+model pages_v_blocks_cta_links {
+  order              Int                                             @map("_order")
+  parent_id          Int                                             @map("_parent_id")
+  id                 Int                                             @id @default(dbgenerated("nextval('_pages_v_blocks_cta_links_id_seq'::regclass)"))
+  link_type          enum__pages_v_blocks_cta_links_link_type?       @default(reference)
+  link_new_tab       Boolean?
+  link_url           String?                                         @db.VarChar
+  link_label         String?                                         @db.VarChar
+  link_appearance    enum__pages_v_blocks_cta_links_link_appearance? @default(default)
+  uuid               String?                                         @map("_uuid") @db.VarChar
+  pages_v_blocks_cta pages_v_blocks_cta                              @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_blocks_cta_links_parent_id_fk")
+
+  @@index([order], map: "_pages_v_blocks_cta_links_order_idx")
+  @@index([parent_id], map: "_pages_v_blocks_cta_links_parent_id_idx")
+  @@map("_pages_v_blocks_cta_links")
+}
+
+model pages_v_blocks_form_block {
+  order         Int      @map("_order")
+  parent_id     Int      @map("_parent_id")
+  path          String   @map("_path")
+  id            Int      @id @default(dbgenerated("nextval('_pages_v_blocks_form_block_id_seq'::regclass)"))
+  form_id       Int?
+  enable_intro  Boolean?
+  intro_content Json?
+  uuid          String?  @map("_uuid") @db.VarChar
+  block_name    String?  @db.VarChar
+  forms         forms?   @relation(fields: [form_id], references: [id], onUpdate: NoAction, map: "_pages_v_blocks_form_block_form_id_forms_id_fk")
+  pages_v       pages_v  @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_blocks_form_block_parent_id_fk")
+
+  @@index([form_id], map: "_pages_v_blocks_form_block_form_idx")
+  @@index([order], map: "_pages_v_blocks_form_block_order_idx")
+  @@index([parent_id], map: "_pages_v_blocks_form_block_parent_id_idx")
+  @@index([path], map: "_pages_v_blocks_form_block_path_idx")
+  @@map("_pages_v_blocks_form_block")
+}
+
+model pages_v_blocks_media_block {
+  order      Int     @map("_order")
+  parent_id  Int     @map("_parent_id")
+  path       String  @map("_path")
+  id         Int     @id @default(dbgenerated("nextval('_pages_v_blocks_media_block_id_seq'::regclass)"))
+  media_id   Int?
+  uuid       String? @map("_uuid") @db.VarChar
+  block_name String? @db.VarChar
+  media      media?  @relation(fields: [media_id], references: [id], onUpdate: NoAction, map: "_pages_v_blocks_media_block_media_id_media_id_fk")
+  pages_v    pages_v @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_blocks_media_block_parent_id_fk")
+
+  @@index([media_id], map: "_pages_v_blocks_media_block_media_idx")
+  @@index([order], map: "_pages_v_blocks_media_block_order_idx")
+  @@index([parent_id], map: "_pages_v_blocks_media_block_parent_id_idx")
+  @@index([path], map: "_pages_v_blocks_media_block_path_idx")
+  @@map("_pages_v_blocks_media_block")
+}
+
+model pages_v_rels {
+  id            Int         @id @default(dbgenerated("nextval('_pages_v_rels_id_seq'::regclass)"))
+  order         Int?
+  parent_id     Int
+  path          String      @db.VarChar
+  pages_id      Int?
+  posts_id      Int?
+  categories_id Int?
+  categories    categories? @relation(fields: [categories_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_rels_categories_fk")
+  pages         pages?      @relation(fields: [pages_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_rels_pages_fk")
+  pages_v       pages_v     @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_rels_parent_fk")
+  posts         posts?      @relation(fields: [posts_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_rels_posts_fk")
+
+  @@index([categories_id])
+  @@index([order])
+  @@index([pages_id])
+  @@index([parent_id], map: "_pages_v_rels_parent_idx")
+  @@index([path])
+  @@index([posts_id])
+  @@map("_pages_v_rels")
+}
+
+model pages_v_version_hero_links {
+  order           Int                                               @map("_order")
+  parent_id       Int                                               @map("_parent_id")
+  id              Int                                               @id @default(dbgenerated("nextval('_pages_v_version_hero_links_id_seq'::regclass)"))
+  link_type       enum__pages_v_version_hero_links_link_type?       @default(reference)
+  link_new_tab    Boolean?
+  link_url        String?                                           @db.VarChar
+  link_label      String?                                           @db.VarChar
+  link_appearance enum__pages_v_version_hero_links_link_appearance? @default(default)
+  uuid            String?                                           @map("_uuid") @db.VarChar
+  pages_v         pages_v                                           @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_pages_v_version_hero_links_parent_id_fk")
+
+  @@index([order], map: "_pages_v_version_hero_links_order_idx")
+  @@index([parent_id], map: "_pages_v_version_hero_links_parent_id_idx")
+  @@map("_pages_v_version_hero_links")
+}
+
+model posts_v {
+  id                                         Int                                 @id @default(dbgenerated("nextval('_posts_v_id_seq'::regclass)"))
+  parent_id                                  Int?
+  version_title                              String?                             @db.VarChar
+  version_hero_image_id                      Int?
+  version_content                            Json?
+  version_meta_title                         String?                             @db.VarChar
+  version_meta_image_id                      Int?
+  version_meta_description                   String?                             @db.VarChar
+  version_published_at                       DateTime?                           @db.Timestamptz(3)
+  version_slug                               String?                             @db.VarChar
+  version_slug_lock                          Boolean?                            @default(true)
+  version_updated_at                         DateTime?                           @db.Timestamptz(3)
+  version_created_at                         DateTime?                           @db.Timestamptz(3)
+  version__status                            enum__posts_v_version_status?       @default(draft)
+  created_at                                 DateTime                            @default(now()) @db.Timestamptz(3)
+  updated_at                                 DateTime                            @default(now()) @db.Timestamptz(3)
+  latest                                     Boolean?
+  autosave                                   Boolean?
+  posts                                      posts?                              @relation(fields: [parent_id], references: [id], onUpdate: NoAction, map: "_posts_v_parent_id_posts_id_fk")
+  media_posts_v_version_hero_image_idTomedia media?                              @relation("posts_v_version_hero_image_idTomedia", fields: [version_hero_image_id], references: [id], onUpdate: NoAction, map: "_posts_v_version_hero_image_id_media_id_fk")
+  media_posts_v_version_meta_image_idTomedia media?                              @relation("posts_v_version_meta_image_idTomedia", fields: [version_meta_image_id], references: [id], onUpdate: NoAction, map: "_posts_v_version_meta_image_id_media_id_fk")
+  posts_v_rels                               posts_v_rels[]
+  posts_v_version_populated_authors          posts_v_version_populated_authors[]
+
+  @@index([autosave])
+  @@index([created_at])
+  @@index([latest])
+  @@index([parent_id], map: "_posts_v_parent_idx")
+  @@index([updated_at])
+  @@index([version_meta_image_id], map: "_posts_v_version_meta_version_meta_image_idx")
+  @@index([version__status], map: "_posts_v_version_version__status_idx")
+  @@index([version_created_at], map: "_posts_v_version_version_created_at_idx")
+  @@index([version_hero_image_id], map: "_posts_v_version_version_hero_image_idx")
+  @@index([version_slug], map: "_posts_v_version_version_slug_idx")
+  @@index([version_updated_at], map: "_posts_v_version_version_updated_at_idx")
+  @@map("_posts_v")
+}
+
+model posts_v_rels {
+  id            Int         @id @default(dbgenerated("nextval('_posts_v_rels_id_seq'::regclass)"))
+  order         Int?
+  parent_id     Int
+  path          String      @db.VarChar
+  posts_id      Int?
+  categories_id Int?
+  users_id      Int?
+  categories    categories? @relation(fields: [categories_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_posts_v_rels_categories_fk")
+  posts_v       posts_v     @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_posts_v_rels_parent_fk")
+  posts         posts?      @relation(fields: [posts_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_posts_v_rels_posts_fk")
+  users         users?      @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_posts_v_rels_users_fk")
+
+  @@index([categories_id])
+  @@index([order])
+  @@index([parent_id], map: "_posts_v_rels_parent_idx")
+  @@index([path])
+  @@index([posts_id])
+  @@index([users_id])
+  @@map("_posts_v_rels")
+}
+
+model posts_v_version_populated_authors {
+  order     Int     @map("_order")
+  parent_id Int     @map("_parent_id")
+  id        Int     @id @default(dbgenerated("nextval('_posts_v_version_populated_authors_id_seq'::regclass)"))
+  uuid      String? @map("_uuid") @db.VarChar
+  name      String? @db.VarChar
+  posts_v   posts_v @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "_posts_v_version_populated_authors_parent_id_fk")
+
+  @@index([order], map: "_posts_v_version_populated_authors_order_idx")
+  @@index([parent_id], map: "_posts_v_version_populated_authors_parent_id_idx")
+  @@map("_posts_v_version_populated_authors")
+}
+
+model categories {
+  id                                                                  Int                             @id @default(autoincrement())
+  title                                                               String                          @db.VarChar
+  slug                                                                String?                         @db.VarChar
+  slug_lock                                                           Boolean?                        @default(true)
+  parent_id                                                           Int?
+  updated_at                                                          DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                                                          DateTime                        @default(now()) @db.Timestamptz(3)
+  pages_v_rels                                                        pages_v_rels[]
+  posts_v_rels                                                        posts_v_rels[]
+  categories                                                          categories?                     @relation("categoriesTocategories", fields: [parent_id], references: [id], onUpdate: NoAction, map: "categories_parent_id_categories_id_fk")
+  other_categories                                                    categories[]                    @relation("categoriesTocategories")
+  categories_breadcrumbs_categories_breadcrumbs_doc_idTocategories    categories_breadcrumbs[]        @relation("categories_breadcrumbs_doc_idTocategories")
+  categories_breadcrumbs_categories_breadcrumbs_parent_idTocategories categories_breadcrumbs[]        @relation("categories_breadcrumbs_parent_idTocategories")
+  pages_rels                                                          pages_rels[]
+  payload_locked_documents_rels                                       payload_locked_documents_rels[]
+  posts_rels                                                          posts_rels[]
+
+  @@index([created_at])
+  @@index([parent_id], map: "categories_parent_idx")
+  @@index([slug])
+  @@index([updated_at])
+}
+
+model categories_breadcrumbs {
+  order                                                   Int         @map("_order")
+  parent_id                                               Int         @map("_parent_id")
+  id                                                      String      @id @db.VarChar
+  doc_id                                                  Int?
+  url                                                     String?     @db.VarChar
+  label                                                   String?     @db.VarChar
+  categories_categories_breadcrumbs_doc_idTocategories    categories? @relation("categories_breadcrumbs_doc_idTocategories", fields: [doc_id], references: [id], onUpdate: NoAction, map: "categories_breadcrumbs_doc_id_categories_id_fk")
+  categories_categories_breadcrumbs_parent_idTocategories categories  @relation("categories_breadcrumbs_parent_idTocategories", fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "categories_breadcrumbs_parent_id_fk")
+
+  @@index([doc_id], map: "categories_breadcrumbs_doc_idx")
+  @@index([order], map: "categories_breadcrumbs_order_idx")
+  @@index([parent_id], map: "categories_breadcrumbs_parent_id_idx")
+}
+
+model footer {
+  id               Int                @id @default(autoincrement())
+  updated_at       DateTime?          @db.Timestamptz(3)
+  created_at       DateTime?          @db.Timestamptz(3)
+  footer_nav_items footer_nav_items[]
+  footer_rels      footer_rels[]
+}
+
+model footer_nav_items {
+  order        Int                              @map("_order")
+  parent_id    Int                              @map("_parent_id")
+  id           String                           @id @db.VarChar
+  link_type    enum_footer_nav_items_link_type? @default(reference)
+  link_new_tab Boolean?
+  link_url     String?                          @db.VarChar
+  link_label   String                           @db.VarChar
+  footer       footer                           @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "footer_nav_items_parent_id_fk")
+
+  @@index([order], map: "footer_nav_items_order_idx")
+  @@index([parent_id], map: "footer_nav_items_parent_id_idx")
+}
+
+model footer_rels {
+  id        Int    @id @default(autoincrement())
+  order     Int?
+  parent_id Int
+  path      String @db.VarChar
+  pages_id  Int?
+  posts_id  Int?
+  pages     pages? @relation(fields: [pages_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "footer_rels_pages_fk")
+  footer    footer @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "footer_rels_parent_fk")
+  posts     posts? @relation(fields: [posts_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "footer_rels_posts_fk")
+
+  @@index([order])
+  @@index([pages_id])
+  @@index([parent_id], map: "footer_rels_parent_idx")
+  @@index([path])
+  @@index([posts_id])
+}
+
+model form_submissions {
+  id                               Int                                @id @default(autoincrement())
+  form_id                          Int
+  updated_at                       DateTime                           @default(now()) @db.Timestamptz(3)
+  created_at                       DateTime                           @default(now()) @db.Timestamptz(3)
+  forms                            forms                              @relation(fields: [form_id], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "form_submissions_form_id_forms_id_fk")
+  form_submissions_submission_data form_submissions_submission_data[]
+  payload_locked_documents_rels    payload_locked_documents_rels[]
+
+  @@index([created_at])
+  @@index([form_id], map: "form_submissions_form_idx")
+  @@index([updated_at])
+}
+
+model form_submissions_submission_data {
+  order            Int              @map("_order")
+  parent_id        Int              @map("_parent_id")
+  id               String           @id @db.VarChar
+  field            String           @db.VarChar
+  value            String           @db.VarChar
+  form_submissions form_submissions @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "form_submissions_submission_data_parent_id_fk")
+
+  @@index([order], map: "form_submissions_submission_data_order_idx")
+  @@index([parent_id], map: "form_submissions_submission_data_parent_id_idx")
+}
+
+model forms {
+  id                            Int                             @id @default(autoincrement())
+  title                         String                          @db.VarChar
+  submit_button_label           String?                         @db.VarChar
+  confirmation_type             enum_forms_confirmation_type?   @default(message)
+  confirmation_message          Json?
+  redirect_url                  String?                         @db.VarChar
+  updated_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  pages_v_blocks_form_block     pages_v_blocks_form_block[]
+  form_submissions              form_submissions[]
+  forms_blocks_checkbox         forms_blocks_checkbox[]
+  forms_blocks_country          forms_blocks_country[]
+  forms_blocks_email            forms_blocks_email[]
+  forms_blocks_message          forms_blocks_message[]
+  forms_blocks_number           forms_blocks_number[]
+  forms_blocks_select           forms_blocks_select[]
+  forms_blocks_state            forms_blocks_state[]
+  forms_blocks_text             forms_blocks_text[]
+  forms_blocks_textarea         forms_blocks_textarea[]
+  forms_emails                  forms_emails[]
+  pages_blocks_form_block       pages_blocks_form_block[]
+  payload_locked_documents_rels payload_locked_documents_rels[]
+
+  @@index([created_at])
+  @@index([updated_at])
+}
+
+model forms_blocks_checkbox {
+  order         Int      @map("_order")
+  parent_id     Int      @map("_parent_id")
+  path          String   @map("_path")
+  id            String   @id @db.VarChar
+  name          String   @db.VarChar
+  label         String?  @db.VarChar
+  width         Decimal? @db.Decimal
+  required      Boolean?
+  default_value Boolean?
+  block_name    String?  @db.VarChar
+  forms         forms    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_blocks_checkbox_parent_id_fk")
+
+  @@index([order], map: "forms_blocks_checkbox_order_idx")
+  @@index([parent_id], map: "forms_blocks_checkbox_parent_id_idx")
+  @@index([path], map: "forms_blocks_checkbox_path_idx")
+}
+
+model forms_blocks_country {
+  order      Int      @map("_order")
+  parent_id  Int      @map("_parent_id")
+  path       String   @map("_path")
+  id         String   @id @db.VarChar
+  name       String   @db.VarChar
+  label      String?  @db.VarChar
+  width      Decimal? @db.Decimal
+  required   Boolean?
+  block_name String?  @db.VarChar
+  forms      forms    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_blocks_country_parent_id_fk")
+
+  @@index([order], map: "forms_blocks_country_order_idx")
+  @@index([parent_id], map: "forms_blocks_country_parent_id_idx")
+  @@index([path], map: "forms_blocks_country_path_idx")
+}
+
+model forms_blocks_email {
+  order      Int      @map("_order")
+  parent_id  Int      @map("_parent_id")
+  path       String   @map("_path")
+  id         String   @id @db.VarChar
+  name       String   @db.VarChar
+  label      String?  @db.VarChar
+  width      Decimal? @db.Decimal
+  required   Boolean?
+  block_name String?  @db.VarChar
+  forms      forms    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_blocks_email_parent_id_fk")
+
+  @@index([order], map: "forms_blocks_email_order_idx")
+  @@index([parent_id], map: "forms_blocks_email_parent_id_idx")
+  @@index([path], map: "forms_blocks_email_path_idx")
+}
+
+model forms_blocks_message {
+  order      Int     @map("_order")
+  parent_id  Int     @map("_parent_id")
+  path       String  @map("_path")
+  id         String  @id @db.VarChar
+  message    Json?
+  block_name String? @db.VarChar
+  forms      forms   @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_blocks_message_parent_id_fk")
+
+  @@index([order], map: "forms_blocks_message_order_idx")
+  @@index([parent_id], map: "forms_blocks_message_parent_id_idx")
+  @@index([path], map: "forms_blocks_message_path_idx")
+}
+
+model forms_blocks_number {
+  order         Int      @map("_order")
+  parent_id     Int      @map("_parent_id")
+  path          String   @map("_path")
+  id            String   @id @db.VarChar
+  name          String   @db.VarChar
+  label         String?  @db.VarChar
+  width         Decimal? @db.Decimal
+  default_value Decimal? @db.Decimal
+  required      Boolean?
+  block_name    String?  @db.VarChar
+  forms         forms    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_blocks_number_parent_id_fk")
+
+  @@index([order], map: "forms_blocks_number_order_idx")
+  @@index([parent_id], map: "forms_blocks_number_parent_id_idx")
+  @@index([path], map: "forms_blocks_number_path_idx")
+}
+
+model forms_blocks_select {
+  order                       Int                           @map("_order")
+  parent_id                   Int                           @map("_parent_id")
+  path                        String                        @map("_path")
+  id                          String                        @id @db.VarChar
+  name                        String                        @db.VarChar
+  label                       String?                       @db.VarChar
+  width                       Decimal?                      @db.Decimal
+  default_value               String?                       @db.VarChar
+  required                    Boolean?
+  block_name                  String?                       @db.VarChar
+  forms                       forms                         @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_blocks_select_parent_id_fk")
+  forms_blocks_select_options forms_blocks_select_options[]
+
+  @@index([order], map: "forms_blocks_select_order_idx")
+  @@index([parent_id], map: "forms_blocks_select_parent_id_idx")
+  @@index([path], map: "forms_blocks_select_path_idx")
+}
+
+model forms_blocks_select_options {
+  order               Int                 @map("_order")
+  parent_id           String              @map("_parent_id") @db.VarChar
+  id                  String              @id @db.VarChar
+  label               String              @db.VarChar
+  value               String              @db.VarChar
+  forms_blocks_select forms_blocks_select @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_blocks_select_options_parent_id_fk")
+
+  @@index([order], map: "forms_blocks_select_options_order_idx")
+  @@index([parent_id], map: "forms_blocks_select_options_parent_id_idx")
+}
+
+model forms_blocks_state {
+  order      Int      @map("_order")
+  parent_id  Int      @map("_parent_id")
+  path       String   @map("_path")
+  id         String   @id @db.VarChar
+  name       String   @db.VarChar
+  label      String?  @db.VarChar
+  width      Decimal? @db.Decimal
+  required   Boolean?
+  block_name String?  @db.VarChar
+  forms      forms    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_blocks_state_parent_id_fk")
+
+  @@index([order], map: "forms_blocks_state_order_idx")
+  @@index([parent_id], map: "forms_blocks_state_parent_id_idx")
+  @@index([path], map: "forms_blocks_state_path_idx")
+}
+
+model forms_blocks_text {
+  order         Int      @map("_order")
+  parent_id     Int      @map("_parent_id")
+  path          String   @map("_path")
+  id            String   @id @db.VarChar
+  name          String   @db.VarChar
+  label         String?  @db.VarChar
+  width         Decimal? @db.Decimal
+  default_value String?  @db.VarChar
+  required      Boolean?
+  block_name    String?  @db.VarChar
+  forms         forms    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_blocks_text_parent_id_fk")
+
+  @@index([order], map: "forms_blocks_text_order_idx")
+  @@index([parent_id], map: "forms_blocks_text_parent_id_idx")
+  @@index([path], map: "forms_blocks_text_path_idx")
+}
+
+model forms_blocks_textarea {
+  order         Int      @map("_order")
+  parent_id     Int      @map("_parent_id")
+  path          String   @map("_path")
+  id            String   @id @db.VarChar
+  name          String   @db.VarChar
+  label         String?  @db.VarChar
+  width         Decimal? @db.Decimal
+  default_value String?  @db.VarChar
+  required      Boolean?
+  block_name    String?  @db.VarChar
+  forms         forms    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_blocks_textarea_parent_id_fk")
+
+  @@index([order], map: "forms_blocks_textarea_order_idx")
+  @@index([parent_id], map: "forms_blocks_textarea_parent_id_idx")
+  @@index([path], map: "forms_blocks_textarea_path_idx")
+}
+
+model forms_emails {
+  order      Int     @map("_order")
+  parent_id  Int     @map("_parent_id")
+  id         String  @id @db.VarChar
+  email_to   String? @db.VarChar
+  cc         String? @db.VarChar
+  bcc        String? @db.VarChar
+  reply_to   String? @db.VarChar
+  email_from String? @db.VarChar
+  subject    String  @default("You''ve received a new message.") @db.VarChar
+  message    Json?
+  forms      forms   @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "forms_emails_parent_id_fk")
+
+  @@index([order], map: "forms_emails_order_idx")
+  @@index([parent_id], map: "forms_emails_parent_id_idx")
+}
+
+model header {
+  id               Int                @id @default(autoincrement())
+  updated_at       DateTime?          @db.Timestamptz(3)
+  created_at       DateTime?          @db.Timestamptz(3)
+  header_nav_items header_nav_items[]
+  header_rels      header_rels[]
+}
+
+model header_nav_items {
+  order        Int                              @map("_order")
+  parent_id    Int                              @map("_parent_id")
+  id           String                           @id @db.VarChar
+  link_type    enum_header_nav_items_link_type? @default(reference)
+  link_new_tab Boolean?
+  link_url     String?                          @db.VarChar
+  link_label   String                           @db.VarChar
+  header       header                           @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "header_nav_items_parent_id_fk")
+
+  @@index([order], map: "header_nav_items_order_idx")
+  @@index([parent_id], map: "header_nav_items_parent_id_idx")
+}
+
+model header_rels {
+  id        Int    @id @default(autoincrement())
+  order     Int?
+  parent_id Int
+  path      String @db.VarChar
+  pages_id  Int?
+  posts_id  Int?
+  pages     pages? @relation(fields: [pages_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "header_rels_pages_fk")
+  header    header @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "header_rels_parent_fk")
+  posts     posts? @relation(fields: [posts_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "header_rels_posts_fk")
+
+  @@index([order])
+  @@index([pages_id])
+  @@index([parent_id], map: "header_rels_parent_idx")
+  @@index([path])
+  @@index([posts_id])
+}
+
+model media {
+  id                                           Int                             @id @default(autoincrement())
+  alt                                          String?                         @db.VarChar
+  caption                                      Json?
+  updated_at                                   DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                                   DateTime                        @default(now()) @db.Timestamptz(3)
+  url                                          String?                         @db.VarChar
+  thumbnail_u_r_l                              String?                         @db.VarChar
+  filename                                     String?                         @unique(map: "media_filename_idx") @db.VarChar
+  mime_type                                    String?                         @db.VarChar
+  filesize                                     Decimal?                        @db.Decimal
+  width                                        Decimal?                        @db.Decimal
+  height                                       Decimal?                        @db.Decimal
+  focal_x                                      Decimal?                        @db.Decimal
+  focal_y                                      Decimal?                        @db.Decimal
+  sizes_thumbnail_url                          String?                         @db.VarChar
+  sizes_thumbnail_width                        Decimal?                        @db.Decimal
+  sizes_thumbnail_height                       Decimal?                        @db.Decimal
+  sizes_thumbnail_mime_type                    String?                         @db.VarChar
+  sizes_thumbnail_filesize                     Decimal?                        @db.Decimal
+  sizes_thumbnail_filename                     String?                         @db.VarChar
+  sizes_square_url                             String?                         @db.VarChar
+  sizes_square_width                           Decimal?                        @db.Decimal
+  sizes_square_height                          Decimal?                        @db.Decimal
+  sizes_square_mime_type                       String?                         @db.VarChar
+  sizes_square_filesize                        Decimal?                        @db.Decimal
+  sizes_square_filename                        String?                         @db.VarChar
+  sizes_small_url                              String?                         @db.VarChar
+  sizes_small_width                            Decimal?                        @db.Decimal
+  sizes_small_height                           Decimal?                        @db.Decimal
+  sizes_small_mime_type                        String?                         @db.VarChar
+  sizes_small_filesize                         Decimal?                        @db.Decimal
+  sizes_small_filename                         String?                         @db.VarChar
+  sizes_medium_url                             String?                         @db.VarChar
+  sizes_medium_width                           Decimal?                        @db.Decimal
+  sizes_medium_height                          Decimal?                        @db.Decimal
+  sizes_medium_mime_type                       String?                         @db.VarChar
+  sizes_medium_filesize                        Decimal?                        @db.Decimal
+  sizes_medium_filename                        String?                         @db.VarChar
+  sizes_large_url                              String?                         @db.VarChar
+  sizes_large_width                            Decimal?                        @db.Decimal
+  sizes_large_height                           Decimal?                        @db.Decimal
+  sizes_large_mime_type                        String?                         @db.VarChar
+  sizes_large_filesize                         Decimal?                        @db.Decimal
+  sizes_large_filename                         String?                         @db.VarChar
+  sizes_xlarge_url                             String?                         @db.VarChar
+  sizes_xlarge_width                           Decimal?                        @db.Decimal
+  sizes_xlarge_height                          Decimal?                        @db.Decimal
+  sizes_xlarge_mime_type                       String?                         @db.VarChar
+  sizes_xlarge_filesize                        Decimal?                        @db.Decimal
+  sizes_xlarge_filename                        String?                         @db.VarChar
+  sizes_og_url                                 String?                         @db.VarChar
+  sizes_og_width                               Decimal?                        @db.Decimal
+  sizes_og_height                              Decimal?                        @db.Decimal
+  sizes_og_mime_type                           String?                         @db.VarChar
+  sizes_og_filesize                            Decimal?                        @db.Decimal
+  sizes_og_filename                            String?                         @db.VarChar
+  pages_v_pages_v_version_hero_media_idTomedia pages_v[]                       @relation("pages_v_version_hero_media_idTomedia")
+  pages_v_pages_v_version_meta_image_idTomedia pages_v[]                       @relation("pages_v_version_meta_image_idTomedia")
+  pages_v_blocks_media_block                   pages_v_blocks_media_block[]
+  posts_v_posts_v_version_hero_image_idTomedia posts_v[]                       @relation("posts_v_version_hero_image_idTomedia")
+  posts_v_posts_v_version_meta_image_idTomedia posts_v[]                       @relation("posts_v_version_meta_image_idTomedia")
+  pages_pages_hero_media_idTomedia             pages[]                         @relation("pages_hero_media_idTomedia")
+  pages_pages_meta_image_idTomedia             pages[]                         @relation("pages_meta_image_idTomedia")
+  pages_blocks_media_block                     pages_blocks_media_block[]
+  payload_locked_documents_rels                payload_locked_documents_rels[]
+  posts_posts_hero_image_idTomedia             posts[]                         @relation("posts_hero_image_idTomedia")
+  posts_posts_meta_image_idTomedia             posts[]                         @relation("posts_meta_image_idTomedia")
+  search                                       search[]
+
+  @@index([created_at])
+  @@index([sizes_large_filename], map: "media_sizes_large_sizes_large_filename_idx")
+  @@index([sizes_medium_filename], map: "media_sizes_medium_sizes_medium_filename_idx")
+  @@index([sizes_og_filename], map: "media_sizes_og_sizes_og_filename_idx")
+  @@index([sizes_small_filename], map: "media_sizes_small_sizes_small_filename_idx")
+  @@index([sizes_square_filename], map: "media_sizes_square_sizes_square_filename_idx")
+  @@index([sizes_thumbnail_filename], map: "media_sizes_thumbnail_sizes_thumbnail_filename_idx")
+  @@index([sizes_xlarge_filename], map: "media_sizes_xlarge_sizes_xlarge_filename_idx")
+  @@index([updated_at])
+}
+
+model pages {
+  id                                     Int                             @id @default(autoincrement())
+  title                                  String?                         @db.VarChar
+  hero_type                              enum_pages_hero_type?           @default(lowImpact)
+  hero_rich_text                         Json?
+  hero_media_id                          Int?
+  meta_title                             String?                         @db.VarChar
+  meta_image_id                          Int?
+  meta_description                       String?                         @db.VarChar
+  published_at                           DateTime?                       @db.Timestamptz(3)
+  slug                                   String?                         @db.VarChar
+  slug_lock                              Boolean?                        @default(true)
+  updated_at                             DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                             DateTime                        @default(now()) @db.Timestamptz(3)
+  status                                 enum_pages_status?              @default(draft) @map("_status")
+  pages_v                                pages_v[]
+  pages_v_rels                           pages_v_rels[]
+  footer_rels                            footer_rels[]
+  header_rels                            header_rels[]
+  media_pages_hero_media_idTomedia       media?                          @relation("pages_hero_media_idTomedia", fields: [hero_media_id], references: [id], onUpdate: NoAction, map: "pages_hero_media_id_media_id_fk")
+  media_pages_meta_image_idTomedia       media?                          @relation("pages_meta_image_idTomedia", fields: [meta_image_id], references: [id], onUpdate: NoAction, map: "pages_meta_image_id_media_id_fk")
+  pages_blocks_archive                   pages_blocks_archive[]
+  pages_blocks_content                   pages_blocks_content[]
+  pages_blocks_cta                       pages_blocks_cta[]
+  pages_blocks_form_block                pages_blocks_form_block[]
+  pages_blocks_media_block               pages_blocks_media_block[]
+  pages_hero_links                       pages_hero_links[]
+  pages_rels_pages_rels_pages_idTopages  pages_rels[]                    @relation("pages_rels_pages_idTopages")
+  pages_rels_pages_rels_parent_idTopages pages_rels[]                    @relation("pages_rels_parent_idTopages")
+  payload_locked_documents_rels          payload_locked_documents_rels[]
+  redirects_rels                         redirects_rels[]
+
+  @@index([status])
+  @@index([created_at])
+  @@index([hero_media_id], map: "pages_hero_hero_media_idx")
+  @@index([meta_image_id], map: "pages_meta_meta_image_idx")
+  @@index([slug])
+  @@index([updated_at])
+}
+
+model pages_blocks_archive {
+  order         Int                                    @map("_order")
+  parent_id     Int                                    @map("_parent_id")
+  path          String                                 @map("_path")
+  id            String                                 @id @db.VarChar
+  intro_content Json?
+  populate_by   enum_pages_blocks_archive_populate_by? @default(collection)
+  relation_to   enum_pages_blocks_archive_relation_to? @default(posts)
+  limit         Decimal?                               @default(10) @db.Decimal
+  block_name    String?                                @db.VarChar
+  pages         pages                                  @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_blocks_archive_parent_id_fk")
+
+  @@index([order], map: "pages_blocks_archive_order_idx")
+  @@index([parent_id], map: "pages_blocks_archive_parent_id_idx")
+  @@index([path], map: "pages_blocks_archive_path_idx")
+}
+
+model pages_blocks_content {
+  order                        Int                            @map("_order")
+  parent_id                    Int                            @map("_parent_id")
+  path                         String                         @map("_path")
+  id                           String                         @id @db.VarChar
+  block_name                   String?                        @db.VarChar
+  pages                        pages                          @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_blocks_content_parent_id_fk")
+  pages_blocks_content_columns pages_blocks_content_columns[]
+
+  @@index([order], map: "pages_blocks_content_order_idx")
+  @@index([parent_id], map: "pages_blocks_content_parent_id_idx")
+  @@index([path], map: "pages_blocks_content_path_idx")
+}
+
+model pages_blocks_content_columns {
+  order                Int                                                @map("_order")
+  parent_id            String                                             @map("_parent_id") @db.VarChar
+  id                   String                                             @id @db.VarChar
+  size                 enum_pages_blocks_content_columns_size?            @default(oneThird)
+  rich_text            Json?
+  enable_link          Boolean?
+  link_type            enum_pages_blocks_content_columns_link_type?       @default(reference)
+  link_new_tab         Boolean?
+  link_url             String?                                            @db.VarChar
+  link_label           String?                                            @db.VarChar
+  link_appearance      enum_pages_blocks_content_columns_link_appearance? @default(default)
+  pages_blocks_content pages_blocks_content                               @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_blocks_content_columns_parent_id_fk")
+
+  @@index([order], map: "pages_blocks_content_columns_order_idx")
+  @@index([parent_id], map: "pages_blocks_content_columns_parent_id_idx")
+}
+
+model pages_blocks_cta {
+  order                  Int                      @map("_order")
+  parent_id              Int                      @map("_parent_id")
+  path                   String                   @map("_path")
+  id                     String                   @id @db.VarChar
+  rich_text              Json?
+  block_name             String?                  @db.VarChar
+  pages                  pages                    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_blocks_cta_parent_id_fk")
+  pages_blocks_cta_links pages_blocks_cta_links[]
+
+  @@index([order], map: "pages_blocks_cta_order_idx")
+  @@index([parent_id], map: "pages_blocks_cta_parent_id_idx")
+  @@index([path], map: "pages_blocks_cta_path_idx")
+}
+
+model pages_blocks_cta_links {
+  order            Int                                          @map("_order")
+  parent_id        String                                       @map("_parent_id") @db.VarChar
+  id               String                                       @id @db.VarChar
+  link_type        enum_pages_blocks_cta_links_link_type?       @default(reference)
+  link_new_tab     Boolean?
+  link_url         String?                                      @db.VarChar
+  link_label       String?                                      @db.VarChar
+  link_appearance  enum_pages_blocks_cta_links_link_appearance? @default(default)
+  pages_blocks_cta pages_blocks_cta                             @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_blocks_cta_links_parent_id_fk")
+
+  @@index([order], map: "pages_blocks_cta_links_order_idx")
+  @@index([parent_id], map: "pages_blocks_cta_links_parent_id_idx")
+}
+
+model pages_blocks_form_block {
+  order         Int      @map("_order")
+  parent_id     Int      @map("_parent_id")
+  path          String   @map("_path")
+  id            String   @id @db.VarChar
+  form_id       Int?
+  enable_intro  Boolean?
+  intro_content Json?
+  block_name    String?  @db.VarChar
+  forms         forms?   @relation(fields: [form_id], references: [id], onUpdate: NoAction, map: "pages_blocks_form_block_form_id_forms_id_fk")
+  pages         pages    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_blocks_form_block_parent_id_fk")
+
+  @@index([form_id], map: "pages_blocks_form_block_form_idx")
+  @@index([order], map: "pages_blocks_form_block_order_idx")
+  @@index([parent_id], map: "pages_blocks_form_block_parent_id_idx")
+  @@index([path], map: "pages_blocks_form_block_path_idx")
+}
+
+model pages_blocks_media_block {
+  order      Int     @map("_order")
+  parent_id  Int     @map("_parent_id")
+  path       String  @map("_path")
+  id         String  @id @db.VarChar
+  media_id   Int?
+  block_name String? @db.VarChar
+  media      media?  @relation(fields: [media_id], references: [id], onUpdate: NoAction, map: "pages_blocks_media_block_media_id_media_id_fk")
+  pages      pages   @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_blocks_media_block_parent_id_fk")
+
+  @@index([media_id], map: "pages_blocks_media_block_media_idx")
+  @@index([order], map: "pages_blocks_media_block_order_idx")
+  @@index([parent_id], map: "pages_blocks_media_block_parent_id_idx")
+  @@index([path], map: "pages_blocks_media_block_path_idx")
+}
+
+model pages_hero_links {
+  order           Int                                    @map("_order")
+  parent_id       Int                                    @map("_parent_id")
+  id              String                                 @id @db.VarChar
+  link_type       enum_pages_hero_links_link_type?       @default(reference)
+  link_new_tab    Boolean?
+  link_url        String?                                @db.VarChar
+  link_label      String?                                @db.VarChar
+  link_appearance enum_pages_hero_links_link_appearance? @default(default)
+  pages           pages                                  @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_hero_links_parent_id_fk")
+
+  @@index([order], map: "pages_hero_links_order_idx")
+  @@index([parent_id], map: "pages_hero_links_parent_id_idx")
+}
+
+model pages_rels {
+  id                                Int         @id @default(autoincrement())
+  order                             Int?
+  parent_id                         Int
+  path                              String      @db.VarChar
+  pages_id                          Int?
+  posts_id                          Int?
+  categories_id                     Int?
+  categories                        categories? @relation(fields: [categories_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_rels_categories_fk")
+  pages_pages_rels_pages_idTopages  pages?      @relation("pages_rels_pages_idTopages", fields: [pages_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_rels_pages_fk")
+  pages_pages_rels_parent_idTopages pages       @relation("pages_rels_parent_idTopages", fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_rels_parent_fk")
+  posts                             posts?      @relation(fields: [posts_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "pages_rels_posts_fk")
+
+  @@index([categories_id])
+  @@index([order])
+  @@index([pages_id])
+  @@index([parent_id], map: "pages_rels_parent_idx")
+  @@index([path])
+  @@index([posts_id])
+}
+
+model payload_jobs {
+  id                            Int                             @id @default(autoincrement())
+  input                         Json?
+  completed_at                  DateTime?                       @db.Timestamptz(3)
+  total_tried                   Decimal?                        @default(0) @db.Decimal
+  has_error                     Boolean?                        @default(false)
+  error                         Json?
+  task_slug                     enum_payload_jobs_task_slug?
+  queue                         String?                         @default("default") @db.VarChar
+  wait_until                    DateTime?                       @db.Timestamptz(3)
+  processing                    Boolean?                        @default(false)
+  updated_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  payload_jobs_log              payload_jobs_log[]
+  payload_locked_documents_rels payload_locked_documents_rels[]
+
+  @@index([completed_at])
+  @@index([created_at])
+  @@index([has_error])
+  @@index([processing])
+  @@index([queue])
+  @@index([task_slug])
+  @@index([total_tried])
+  @@index([updated_at])
+  @@index([wait_until])
+}
+
+model payload_jobs_log {
+  order        Int                             @map("_order")
+  parent_id    Int                             @map("_parent_id")
+  id           String                          @id @db.VarChar
+  executed_at  DateTime                        @db.Timestamptz(3)
+  completed_at DateTime                        @db.Timestamptz(3)
+  task_slug    enum_payload_jobs_log_task_slug
+  task_i_d     String                          @db.VarChar
+  input        Json?
+  output       Json?
+  state        enum_payload_jobs_log_state
+  error        Json?
+  payload_jobs payload_jobs                    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_jobs_log_parent_id_fk")
+
+  @@index([order], map: "payload_jobs_log_order_idx")
+  @@index([parent_id], map: "payload_jobs_log_parent_id_idx")
+}
+
+model payload_locked_documents {
+  id                            Int                             @id @default(autoincrement())
+  global_slug                   String?                         @db.VarChar
+  updated_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  payload_locked_documents_rels payload_locked_documents_rels[]
+
+  @@index([created_at])
+  @@index([global_slug])
+  @@index([updated_at])
+}
+
+model payload_locked_documents_rels {
+  id                       Int                      @id @default(autoincrement())
+  order                    Int?
+  parent_id                Int
+  path                     String                   @db.VarChar
+  pages_id                 Int?
+  posts_id                 Int?
+  media_id                 Int?
+  categories_id            Int?
+  users_id                 Int?
+  redirects_id             Int?
+  forms_id                 Int?
+  form_submissions_id      Int?
+  search_id                Int?
+  payload_jobs_id          Int?
+  categories               categories?              @relation(fields: [categories_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_categories_fk")
+  form_submissions         form_submissions?        @relation(fields: [form_submissions_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_form_submissions_fk")
+  forms                    forms?                   @relation(fields: [forms_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_forms_fk")
+  media                    media?                   @relation(fields: [media_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_media_fk")
+  pages                    pages?                   @relation(fields: [pages_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_pages_fk")
+  payload_locked_documents payload_locked_documents @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_parent_fk")
+  payload_jobs             payload_jobs?            @relation(fields: [payload_jobs_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_payload_jobs_fk")
+  posts                    posts?                   @relation(fields: [posts_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_posts_fk")
+  redirects                redirects?               @relation(fields: [redirects_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_redirects_fk")
+  search                   search?                  @relation(fields: [search_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_search_fk")
+  users                    users?                   @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_users_fk")
+
+  @@index([categories_id])
+  @@index([form_submissions_id])
+  @@index([forms_id])
+  @@index([media_id])
+  @@index([order])
+  @@index([pages_id])
+  @@index([parent_id], map: "payload_locked_documents_rels_parent_idx")
+  @@index([path])
+  @@index([payload_jobs_id])
+  @@index([posts_id])
+  @@index([redirects_id])
+  @@index([search_id])
+  @@index([users_id])
+}
+
+model payload_migrations {
+  id         Int      @id @default(autoincrement())
+  name       String?  @db.VarChar
+  batch      Decimal? @db.Decimal
+  updated_at DateTime @default(now()) @db.Timestamptz(3)
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([created_at])
+  @@index([updated_at])
+}
+
+model payload_preferences {
+  id                       Int                        @id @default(autoincrement())
+  key                      String?                    @db.VarChar
+  value                    Json?
+  updated_at               DateTime                   @default(now()) @db.Timestamptz(3)
+  created_at               DateTime                   @default(now()) @db.Timestamptz(3)
+  payload_preferences_rels payload_preferences_rels[]
+
+  @@index([created_at])
+  @@index([key])
+  @@index([updated_at])
+}
+
+model payload_preferences_rels {
+  id                  Int                 @id @default(autoincrement())
+  order               Int?
+  parent_id           Int
+  path                String              @db.VarChar
+  users_id            Int?
+  payload_preferences payload_preferences @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_preferences_rels_parent_fk")
+  users               users?              @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_preferences_rels_users_fk")
+
+  @@index([order])
+  @@index([parent_id], map: "payload_preferences_rels_parent_idx")
+  @@index([path])
+  @@index([users_id])
+}
+
+model posts {
+  id                                     Int                             @id @default(autoincrement())
+  title                                  String?                         @db.VarChar
+  hero_image_id                          Int?
+  content                                Json?
+  meta_title                             String?                         @db.VarChar
+  meta_image_id                          Int?
+  meta_description                       String?                         @db.VarChar
+  published_at                           DateTime?                       @db.Timestamptz(3)
+  slug                                   String?                         @db.VarChar
+  slug_lock                              Boolean?                        @default(true)
+  updated_at                             DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                             DateTime                        @default(now()) @db.Timestamptz(3)
+  status                                 enum_posts_status?              @default(draft) @map("_status")
+  pages_v_rels                           pages_v_rels[]
+  posts_v                                posts_v[]
+  posts_v_rels                           posts_v_rels[]
+  footer_rels                            footer_rels[]
+  header_rels                            header_rels[]
+  pages_rels                             pages_rels[]
+  payload_locked_documents_rels          payload_locked_documents_rels[]
+  media_posts_hero_image_idTomedia       media?                          @relation("posts_hero_image_idTomedia", fields: [hero_image_id], references: [id], onUpdate: NoAction, map: "posts_hero_image_id_media_id_fk")
+  media_posts_meta_image_idTomedia       media?                          @relation("posts_meta_image_idTomedia", fields: [meta_image_id], references: [id], onUpdate: NoAction, map: "posts_meta_image_id_media_id_fk")
+  posts_populated_authors                posts_populated_authors[]
+  posts_rels_posts_rels_parent_idToposts posts_rels[]                    @relation("posts_rels_parent_idToposts")
+  posts_rels_posts_rels_posts_idToposts  posts_rels[]                    @relation("posts_rels_posts_idToposts")
+  redirects_rels                         redirects_rels[]
+  search_rels                            search_rels[]
+
+  @@index([status])
+  @@index([created_at])
+  @@index([hero_image_id], map: "posts_hero_image_idx")
+  @@index([meta_image_id], map: "posts_meta_meta_image_idx")
+  @@index([slug])
+  @@index([updated_at])
+}
+
+model posts_populated_authors {
+  order     Int     @map("_order")
+  parent_id Int     @map("_parent_id")
+  id        String  @id @db.VarChar
+  name      String? @db.VarChar
+  posts     posts   @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "posts_populated_authors_parent_id_fk")
+
+  @@index([order], map: "posts_populated_authors_order_idx")
+  @@index([parent_id], map: "posts_populated_authors_parent_id_idx")
+}
+
+model posts_rels {
+  id                                Int         @id @default(autoincrement())
+  order                             Int?
+  parent_id                         Int
+  path                              String      @db.VarChar
+  posts_id                          Int?
+  categories_id                     Int?
+  users_id                          Int?
+  categories                        categories? @relation(fields: [categories_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "posts_rels_categories_fk")
+  posts_posts_rels_parent_idToposts posts       @relation("posts_rels_parent_idToposts", fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "posts_rels_parent_fk")
+  posts_posts_rels_posts_idToposts  posts?      @relation("posts_rels_posts_idToposts", fields: [posts_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "posts_rels_posts_fk")
+  users                             users?      @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "posts_rels_users_fk")
+
+  @@index([categories_id])
+  @@index([order])
+  @@index([parent_id], map: "posts_rels_parent_idx")
+  @@index([path])
+  @@index([posts_id])
+  @@index([users_id])
+}
+
+model redirects {
+  id                            Int                             @id @default(autoincrement())
+  from                          String                          @db.VarChar
+  to_type                       enum_redirects_to_type?         @default(reference)
+  to_url                        String?                         @db.VarChar
+  updated_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  payload_locked_documents_rels payload_locked_documents_rels[]
+  redirects_rels                redirects_rels[]
+
+  @@index([created_at])
+  @@index([from])
+  @@index([updated_at])
+}
+
+model redirects_rels {
+  id        Int       @id @default(autoincrement())
+  order     Int?
+  parent_id Int
+  path      String    @db.VarChar
+  pages_id  Int?
+  posts_id  Int?
+  pages     pages?    @relation(fields: [pages_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "redirects_rels_pages_fk")
+  redirects redirects @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "redirects_rels_parent_fk")
+  posts     posts?    @relation(fields: [posts_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "redirects_rels_posts_fk")
+
+  @@index([order])
+  @@index([pages_id])
+  @@index([parent_id], map: "redirects_rels_parent_idx")
+  @@index([path])
+  @@index([posts_id])
+}
+
+model search {
+  id                            Int                             @id @default(autoincrement())
+  title                         String?                         @db.VarChar
+  priority                      Decimal?                        @db.Decimal
+  slug                          String?                         @db.VarChar
+  meta_title                    String?                         @db.VarChar
+  meta_description              String?                         @db.VarChar
+  meta_image_id                 Int?
+  updated_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  payload_locked_documents_rels payload_locked_documents_rels[]
+  media                         media?                          @relation(fields: [meta_image_id], references: [id], onUpdate: NoAction, map: "search_meta_image_id_media_id_fk")
+  search_categories             search_categories[]
+  search_rels                   search_rels[]
+
+  @@index([created_at])
+  @@index([meta_image_id], map: "search_meta_meta_image_idx")
+  @@index([slug])
+  @@index([updated_at])
+}
+
+model search_categories {
+  order       Int     @map("_order")
+  parent_id   Int     @map("_parent_id")
+  id          String  @id @db.VarChar
+  relation_to String? @db.VarChar
+  title       String? @db.VarChar
+  search      search  @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "search_categories_parent_id_fk")
+
+  @@index([order], map: "search_categories_order_idx")
+  @@index([parent_id], map: "search_categories_parent_id_idx")
+}
+
+model search_rels {
+  id        Int    @id @default(autoincrement())
+  order     Int?
+  parent_id Int
+  path      String @db.VarChar
+  posts_id  Int?
+  search    search @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "search_rels_parent_fk")
+  posts     posts? @relation(fields: [posts_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "search_rels_posts_fk")
+
+  @@index([order])
+  @@index([parent_id], map: "search_rels_parent_idx")
+  @@index([path])
+  @@index([posts_id])
+}
+
+model users {
+  id                            Int                             @id @default(autoincrement())
+  name                          String?                         @db.VarChar
+  updated_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  email                         String                          @unique(map: "users_email_idx") @db.VarChar
+  reset_password_token          String?                         @db.VarChar
+  reset_password_expiration     DateTime?                       @db.Timestamptz(3)
+  salt                          String?                         @db.VarChar
+  hash                          String?                         @db.VarChar
+  login_attempts                Decimal?                        @default(0) @db.Decimal
+  lock_until                    DateTime?                       @db.Timestamptz(3)
+  posts_v_rels                  posts_v_rels[]
+  payload_locked_documents_rels payload_locked_documents_rels[]
+  payload_preferences_rels      payload_preferences_rels[]
+  posts_rels                    posts_rels[]
+
+  @@index([created_at])
+  @@index([updated_at])
+}
+
+enum enum__pages_v_blocks_archive_populate_by {
+  collection
+  selection
+}
+
+enum enum__pages_v_blocks_archive_relation_to {
+  posts
+}
+
+enum enum__pages_v_blocks_content_columns_link_appearance {
+  default
+  outline
+}
+
+enum enum__pages_v_blocks_content_columns_link_type {
+  reference
+  custom
+}
+
+enum enum__pages_v_blocks_content_columns_size {
+  oneThird
+  half
+  twoThirds
+  full
+}
+
+enum enum__pages_v_blocks_cta_links_link_appearance {
+  default
+  outline
+}
+
+enum enum__pages_v_blocks_cta_links_link_type {
+  reference
+  custom
+}
+
+enum enum__pages_v_version_hero_links_link_appearance {
+  default
+  outline
+}
+
+enum enum__pages_v_version_hero_links_link_type {
+  reference
+  custom
+}
+
+enum enum__pages_v_version_hero_type {
+  none
+  highImpact
+  mediumImpact
+  lowImpact
+}
+
+enum enum__pages_v_version_status {
+  draft
+  published
+}
+
+enum enum__posts_v_version_status {
+  draft
+  published
+}
+
+enum enum_footer_nav_items_link_type {
+  reference
+  custom
+}
+
+enum enum_forms_confirmation_type {
+  message
+  redirect
+}
+
+enum enum_header_nav_items_link_type {
+  reference
+  custom
+}
+
+enum enum_pages_blocks_archive_populate_by {
+  collection
+  selection
+}
+
+enum enum_pages_blocks_archive_relation_to {
+  posts
+}
+
+enum enum_pages_blocks_content_columns_link_appearance {
+  default
+  outline
+}
+
+enum enum_pages_blocks_content_columns_link_type {
+  reference
+  custom
+}
+
+enum enum_pages_blocks_content_columns_size {
+  oneThird
+  half
+  twoThirds
+  full
+}
+
+enum enum_pages_blocks_cta_links_link_appearance {
+  default
+  outline
+}
+
+enum enum_pages_blocks_cta_links_link_type {
+  reference
+  custom
+}
+
+enum enum_pages_hero_links_link_appearance {
+  default
+  outline
+}
+
+enum enum_pages_hero_links_link_type {
+  reference
+  custom
+}
+
+enum enum_pages_hero_type {
+  none
+  highImpact
+  mediumImpact
+  lowImpact
+}
+
+enum enum_pages_status {
+  draft
+  published
+}
+
+enum enum_payload_jobs_log_state {
+  failed
+  succeeded
+}
+
+enum enum_payload_jobs_log_task_slug {
+  inline
+  schedulePublish
+}
+
+enum enum_payload_jobs_task_slug {
+  inline
+  schedulePublish
+}
+
+enum enum_posts_status {
+  draft
+  published
+}
+
+enum enum_redirects_to_type {
+  reference
+  custom
+}

@@ -11,3 +11,8 @@ public/media/
 
 public/robots.txt
 public/sitemap*.xml
+# Added by Payload
+POSTGRES_URL=postgres://neondb_owner:teq8yCpd0bhU@ep-aged-rice-a76ogyqw-pooler.ap-southeast-2.aws.neon.tech/neondb?sslmode=require
+PAYLOAD_SECRET=21799971c5cb06dfec94788d
+NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+CRON_SECRET=YOUR_CRON_SECRET_HERE
