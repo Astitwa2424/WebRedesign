@@ -2,25 +2,21 @@ import { put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const filename = searchParams.get('filename')
+  const formData = await request.formData()
+  const file = formData.get('file') as File
 
-  if (!filename) {
-    return NextResponse.json({ error: 'Filename is required' }, { status: 400 })
-  }
-
-  if (!request.body) {
-    return NextResponse.json({ error: 'Request body is empty' }, { status: 400 })
+  if (!file) {
+    return NextResponse.json({ error: 'No file provided' }, { status: 400 })
   }
 
   try {
-    const blob = await put(filename, request.body, {
+    const blob = await put(file.name, file, {
       access: 'public',
     })
 
-    return NextResponse.json(blob)
+    return NextResponse.json({ url: blob.url })
   } catch (error) {
-    console.error('Upload error:', error)
+    console.error('Error uploading to Vercel Blob:', error)
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
   }
 }
